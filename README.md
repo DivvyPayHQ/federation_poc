@@ -40,7 +40,7 @@ defmodule ProductsWeb.Schema do
 
     field :product, :product do
       arg(:upc, non_null(:string))
-      resolve(fn _, _, _ -> {:ok, %{upc: "123", name: "Test Product", price: 1000}} end)
+      resolve(&resolve_product_by_upc/2)
     end
   end
 
@@ -50,6 +50,9 @@ defmodule ProductsWeb.Schema do
     field(:name, non_null(:string))
     field(:price, :integer)
   end
+
+  defp resolve_product_by_upc(%{upc: upc}, _ctx),
+    do: {:ok, %{upc: upc, name: "Test Product", price: 1000}}
 end
 ```
 
@@ -92,9 +95,7 @@ defmodule ReviewsWeb.Schema do
     field(:id, non_null(:id))
 
     field(:_resolve_reference, :review) do
-      resolve(fn _, _args, _ ->
-        {:ok, %{__typename: "Review"}}
-      end)
+      resolve(&resolve_review_by_id/2)
     end
   end
 
@@ -107,15 +108,26 @@ defmodule ReviewsWeb.Schema do
     end
 
     field(:reviews, list_of(:review)) do
-      resolve(fn _, _ -> {:ok, @reviews} end)
+      resolve(&resolve_reviews_for_product/3)
     end
 
     field(:_resolve_reference, :product) do
-      resolve(fn _args, _ ->
-        {:ok, %{__typename: "Product"}}
-      end)
+      resolve(&resolve_product_by_upc/2)
     end
   end
+
+  defp resolve_product_by_upc(%{upc: upc}, _ctx),
+    do:
+      {:ok,
+       %{
+         __typename: "Product",
+         upc: upc,
+         reviews: @reviews
+       }}
+
+  defp resolve_review_by_id(%{id: _id}, _ctx), do: {:ok, %{__typename: "Review"}}
+
+  defp resolve_reviews_for_product(product, _args, _ctx), do: {:ok, product.reviews}
 end
 ```
 
@@ -156,9 +168,11 @@ defmodule InventoryWeb.Schema do
     end
 
     field(:in_stock, :boolean) do
-      resolve(fn _, _ -> {:ok, true} end)
+      resolve(&resolve_in_stock_for_product/3)
     end
   end
+
+  defp resolve_in_stock_for_product(%{upc: _upc} = _product, _args, _ctx), do: {:ok, true}
 end
 ```
 

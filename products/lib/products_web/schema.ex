@@ -7,7 +7,7 @@ defmodule ProductsWeb.Schema do
 
     field :product, :product do
       arg(:upc, non_null(:string))
-      resolve(fn _, _, _ -> {:ok, %{upc: "123", name: "Test Product", price: 1000}} end)
+      resolve(&resolve_product_by_upc/2)
     end
   end
 
@@ -17,4 +17,7 @@ defmodule ProductsWeb.Schema do
     field(:name, non_null(:string))
     field(:price, :integer)
   end
+
+  defp resolve_product_by_upc(%{upc: upc}, _ctx),
+    do: {:ok, %{upc: upc, name: "Test Product", price: 1000}}
 end

@@ -20,9 +20,7 @@ defmodule ReviewsWeb.Schema do
     field(:id, non_null(:id))
 
     field(:_resolve_reference, :review) do
-      resolve(fn _, _args, _ ->
-        {:ok, %{__typename: "Review"}}
-      end)
+      resolve(&resolve_review_by_id/2)
     end
   end
 
@@ -35,13 +33,24 @@ defmodule ReviewsWeb.Schema do
     end
 
     field(:reviews, list_of(:review)) do
-      resolve(fn _, _ -> {:ok, @reviews} end)
+      resolve(&resolve_reviews_for_product/3)
     end
 
     field(:_resolve_reference, :product) do
-      resolve(fn _args, _ ->
-        {:ok, %{__typename: "Product"}}
-      end)
+      resolve(&resolve_product_by_upc/2)
     end
   end
+
+  defp resolve_product_by_upc(%{upc: upc}, _ctx),
+    do:
+      {:ok,
+       %{
+         __typename: "Product",
+         upc: upc,
+         reviews: @reviews
+       }}
+
+  defp resolve_review_by_id(%{id: _id}, _ctx), do: {:ok, %{__typename: "Review"}}
+
+  defp resolve_reviews_for_product(product, _args, _ctx), do: {:ok, product.reviews}
 end

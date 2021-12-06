@@ -15,7 +15,9 @@ defmodule InventoryWeb.Schema do
     end
 
     field(:in_stock, :boolean) do
-      resolve(fn _, _ -> {:ok, true} end)
+      resolve(&resolve_in_stock_for_product/3)
     end
   end
+
+  defp resolve_in_stock_for_product(%{upc: _upc} = _product, _args, _ctx), do: {:ok, true}
 end
