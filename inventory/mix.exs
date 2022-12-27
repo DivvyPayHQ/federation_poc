@@ -33,8 +33,8 @@ defmodule Inventory.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
-      {:absinthe, "~> 1.6.5"},
-      {:absinthe_federation, "~> 0.1.7"},
+      {:absinthe, "~> 1.7.0"},
+      {:absinthe_federation, "~> 0.3.1"},
       {:absinthe_plug, "~> 1.5"},
       {:phoenix, "~> 1.5.7"},
       {:phoenix_live_dashboard, "~> 0.4"},
